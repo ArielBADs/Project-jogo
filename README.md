@@ -1,5 +1,5 @@
 # Projeto-jogo
-Projeto ministrado pelo grupo: Ariel Sharon, João Nascimento, Heitor Higino e Joyce de Oliveira
+Projeto ministrado pelo grupo: Ariel Sharon, João Nascimento, Heitor Higino, Joyce de Oliveira e Criso Albuquerque
 
 # Objetivo
 * __Criar um jogo usando a linguagem C com auxílio da biblioteca [Raylib](https://www.raylib.com/index.html), e desenvolver a arte e mecânica do jogo__
