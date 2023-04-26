@@ -15,6 +15,7 @@ int main()
 {
     menu();
 }
+
 void menu(void)
 {
     int screen_width = 900, screen_hight = 600;
@@ -42,9 +43,17 @@ void menu(void)
     
     int numTextures = 0, numSounds = 0;
 
-    FILE* file = fopen("textures.txt", "r");
     char linha[256];
-    while (!feof(file)) {
+    FILE* file = fopen("textures.txt", "r");
+    
+    if (file == NULL)
+    {
+        printf("Não foi possível abrir o arquivo");
+        exit(1);
+    }
+    
+    while (!feof(file)) 
+    {
         
         BeginDrawing();
             ClearBackground(RAYWHITE);
@@ -52,11 +61,14 @@ void menu(void)
         EndDrawing();
         
         fscanf(file, "%s\n", linha);
-        if(linha[0] == 't'){
+        
+        if(linha[0] == 't')
+        {
             textures[numTextures] = LoadTexture(linha);
             numTextures++;
         }
-        else{
+        else
+        {
             sounds[numSounds] = LoadSound(linha);
             numSounds++;
         }
