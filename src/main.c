@@ -1,5 +1,12 @@
-#include "raylib.h"
+#define MAX_TEXTURES 16
+#define MAX_SOUNDS 2
+#include <raylib.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
+
+Texture2D textures[MAX_TEXTURES];
+Sound sounds[MAX_SOUNDS];
 
 void menu(void);
 void initGame(void);
@@ -12,9 +19,9 @@ void menu(void)
 {
     int screen_width = 900, screen_hight = 600;
 
-    InitWindow(screen_width, screen_hight, "Run");
-    InitAudioDevice();
+    InitWindow(screen_width, screen_hight, "menu");
     SetTargetFPS(60);
+    InitAudioDevice();
 
     // Definir a posição e tamanho do botão "Play"
     Rectangle playButton = {screen_width / 2 - 95, screen_hight / 2 - 100, 200, 50};
@@ -28,21 +35,39 @@ void menu(void)
     // Background do menu;
     Rectangle menu = {0, 0, screen_width, screen_hight};
 
-    Texture2D texturaMenu = LoadTexture("textures/menu.png");
-    Texture2D texturaPlay = LoadTexture("textures/button-play.png");
-    Texture2D texturaExit = LoadTexture("textures/button-exit.png");
-    Texture2D texturaSoundOn = LoadTexture("textures/sound-on.png");
-    Texture2D texturaSoundOff = LoadTexture("textures/sound-off.png");
-    Sound open = LoadSound("sounds/open.mp3");
-    SetSoundVolume(open, 5);
+    Texture2D loading = LoadTexture("textures/loading.png");
+    SetSoundVolume(sounds[1], 5);
 
     int musica = 0, screenView = 0;
+    
+    int numTextures = 0, numSounds = 0;
+
+    FILE* file = fopen("textures.txt", "r");
+    char linha[256];
+    while (!feof(file)) {
+        
+        BeginDrawing();
+            ClearBackground(RAYWHITE);
+            DrawTexture(loading, -80, 0, WHITE);
+        EndDrawing();
+        
+        fscanf(file, "%s\n", linha);
+        if(linha[0] == 't'){
+            textures[numTextures] = LoadTexture(linha);
+            numTextures++;
+        }
+        else{
+            sounds[numSounds] = LoadSound(linha);
+            numSounds++;
+        }
+    }
+    fclose(file);
 
     while (!WindowShouldClose())
     {
         if (musica == 0)
         {
-            PlaySound(open);
+            PlaySound(sounds[0]);
             musica = 1;
         }
         if (CheckCollisionPointRec(GetMousePosition(), playButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -59,59 +84,38 @@ void menu(void)
         {
             if (musica == 1)
             {
-                PauseSound(open);
+                PauseSound(sounds[0]);
                 musica = 2;
             }
             else if (musica == 2)
             {
-                ResumeSound(open);
+                ResumeSound(sounds[0]);
                 musica = 1;
             }
         }
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-        if (screenView == 0)
-        {
-            DrawTexture(texturaMenu, menu.x, menu.y, WHITE);
-            DrawTexture(texturaPlay, playButton.x, playButton.y, WHITE);
-            DrawTexture(texturaExit, exitButton.x, exitButton.y, WHITE);
+            ClearBackground(RAYWHITE);
+            if (screenView == 0)
+            {
+                DrawTexture(textures[0], menu.x, menu.y, WHITE);
+                DrawTexture(textures[1], playButton.x, playButton.y, WHITE);
+                DrawTexture(textures[2], exitButton.x, exitButton.y, WHITE);
 
-            if (musica == 1)
-                DrawTexture(texturaSoundOn, musicButton.x, musicButton.y, WHITE);
+                if (musica == 1)
+                    DrawTexture(textures[3], musicButton.x, musicButton.y, WHITE);
 
-            else
-                DrawTexture(texturaSoundOff, musicButton.x, musicButton.y, WHITE);
-        }
+                else
+                    DrawTexture(textures[4], musicButton.x, musicButton.y, WHITE);
+            }
         EndDrawing();
-
-        if (screenView == 1)
-            break;
     }
-    CloseWindow();
-    CloseAudioDevice();
 }
 
 void initGame(void)
 {
-    CloseWindow();
     int screen_width = 1280, screen_hight = 800;
 
-    InitWindow(screen_width, screen_hight, "Run");
-    SetTargetFPS(60);
-
-    Texture2D textureCin = LoadTexture("textures/cin.png");
-    Texture2D textureCasa = LoadTexture("textures/casa.png");
-    Texture2D texture = LoadTexture("textures/fundo.png");
-    Texture2D textureRedbull = LoadTexture("textures/redbull.png");
-    Texture2D textureOnda = LoadTexture("textures/onda.png");
-    Texture2D texturePlayer1 = LoadTexture("textures/player_1.png");
-    Texture2D texturePlayer2 = LoadTexture("textures/player_2.png");
-    Texture2D texturePlayer1_2 = LoadTexture("textures/player1_2.png");
-    Texture2D texturePlayer2_2 = LoadTexture("textures/player2_2.png");
-    Texture2D texturaTelaPerdeu = LoadTexture("textures/perdeu.png");
-    Texture2D texturaTelaGanhou = LoadTexture("textures/ganhou.png");
-    Sound grito = LoadSound("sounds/grito.mp3");
-    
+    SetWindowSize(screen_width, screen_hight);
     
     // background
 
@@ -282,7 +286,7 @@ void initGame(void)
 
         if (CheckCollisionRecs(player, onda) || player.y > 700)
         {
-            PlaySound(grito);
+            PlaySound(sounds[1]);
             modoJogo = 1;
             screenView = 1;
         }
@@ -302,7 +306,7 @@ void initGame(void)
             }
             else if (podeEntrar == false)
             {
-                PlaySound(grito);
+                PlaySound(sounds[1]);
                 screenView = 1;
                 modoJogo = 2;
             }
@@ -322,21 +326,21 @@ void initGame(void)
                 DrawRectangle(casa.x, casa.y, casa.width, casa.height, ORANGE);
                 DrawRectangle(onda.x, onda.y, onda.width, onda.height, BLUE);
                 DrawRectangle(back.x, back.y, back.width, back.height, WHITE);
-                DrawTexture(texture, back.x, back.y, WHITE);
+                DrawTexture(textures[5], back.x, back.y, WHITE);
                 // desenhar os objetos na tela
                 if (podeEntrar == false)
                 {
                     if (parou == 0)
-                        DrawTexture(texturePlayer1, player.x, player.y, WHITE);
+                        DrawTexture(textures[6], player.x, player.y, WHITE);
                     else
-                        DrawTexture(texturePlayer1_2, player.x, player.y, WHITE);
+                        DrawTexture(textures[7], player.x, player.y, WHITE);
                 }
                 else
                 {
                     if (parou == 0)
-                        DrawTexture(texturePlayer2, player.x, player.y, WHITE);
+                        DrawTexture(textures[8], player.x, player.y, WHITE);
                     else
-                        DrawTexture(texturePlayer2_2, player.x, player.y, WHITE);
+                        DrawTexture(textures[9], player.x, player.y, WHITE);
                 }
                 for (int i = 0; i < 20; i++)
                 {
@@ -349,7 +353,7 @@ void initGame(void)
                 }
                 if (!pegar)
                 {
-                    DrawTexture(textureRedbull, redbull.x, redbull.y, WHITE);
+                    DrawTexture(textures[10], redbull.x, redbull.y, WHITE);
                 }
                 else
                 {
@@ -357,28 +361,28 @@ void initGame(void)
                     playerspeed = 5.33;
                 }
                 DrawRectangle(cracha.x, cracha.y, cracha.width, cracha.height, RED);
-                DrawTexture(textureCasa, casa.x, casa.y, WHITE);
-                DrawTexture(textureCin, cin.x, cin.y, WHITE);
-                DrawTexture(textureOnda, onda.x, onda.y, WHITE);
+                DrawTexture(textures[11], casa.x, casa.y, WHITE);
+                DrawTexture(textures[12], cin.x, cin.y, WHITE);
+                DrawTexture(textures[13], onda.x, onda.y, WHITE);
             }
             EndMode2D();
             if(modoJogo == 1 && screenView == 1){
                 camera.target = (Vector2){0, 0};
-                DrawTexture(texturaTelaPerdeu, -40, 0, WHITE);
+                DrawTexture(textures[14], -45, -10, WHITE);
                 if (IsKeyDown(KEY_SPACE))
                 {
                     initGame();
                 }
             }if(modoJogo == 2 && screenView == 1){
                 camera.target = (Vector2){0, 0};
-                DrawTexture(texturaTelaPerdeu, -40, 0, WHITE);
+                DrawTexture(textures[14], -45, -10, WHITE);
                 if (IsKeyDown(KEY_SPACE))
                 {
                     initGame();
                 }
             }if(modoJogo == 3 && screenView == 1){
                 camera.target = (Vector2){0, 0};
-                DrawTexture(texturaTelaGanhou, -40, 0, WHITE);
+                DrawTexture(textures[15], -45, -10, WHITE);
             }
             
         EndDrawing();
