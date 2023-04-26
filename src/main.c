@@ -54,7 +54,6 @@ void menu(void)
     
     while (!feof(file)) 
     {
-        
         BeginDrawing();
             ClearBackground(RAYWHITE);
             DrawTexture(loading, -80, 0, WHITE);
